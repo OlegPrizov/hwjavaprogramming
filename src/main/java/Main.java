@@ -112,54 +112,6 @@ public class Main {
         }
     }
 
-//    public static void visitLink() {
-//        try {
-//            System.out.println("Введите ваш UUID:");
-//            UUID userUuid = UUID.fromString(SCANNER.nextLine());
-//            System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
-//            String shortLink = SCANNER.nextLine();
-//
-//            Optional<LinkInfo> optionalLink = DATABASE.getLink(userUuid, shortLink);
-//            if (!optionalLink.isPresent()) {
-//                System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
-//                return;
-//            }
-//
-//            LinkInfo link = optionalLink.get();
-//            long timeCreate = link.getLinkCreatedDate();
-//            long lifeTime = System.currentTimeMillis() - timeCreate;
-//            long linkLiveTime = (long) LIVE_TIME_LINK_HOUR * 60 * 60 * 1000;
-//
-//            if (linkLiveTime < lifeTime) {
-//                System.out.println("Ссылка недействительна, истек срок действия");
-//                DATABASE.deleteLink(userUuid, shortLink);
-//                return;
-//            }
-//
-//            int limit = link.getLimit();
-//            if (limit > 1) {
-//                int newLimit = limit - 1;
-//                System.out.println("Осталось " + newLimit + " переходов");
-//                DATABASE.updateLimit(userUuid, newLimit, shortLink);
-//            } else if (limit == 1) {
-//                int newLimit = -1;
-//                System.out.println("Осталось 0 переходов, далее ссылка будет недоступна");
-//                DATABASE.updateLimit(userUuid, newLimit, shortLink);
-//            } else if (limit == -1) {
-//                System.out.println("Ссылка недоступна");
-//                return;
-//            }
-//
-//            String longLink = link.getLongLink();
-//            try {
-//                Desktop.getDesktop().browse(new URI(longLink));
-//            } catch (IOException | URISyntaxException e) {
-//                System.out.println("Не удалось перейти по ссылке");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Что-то пошло не так. Попробуйте снова");
-//        }
-//    }
     public static void visitLink() {
         try {
             UUID userUuid = null;
