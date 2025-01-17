@@ -150,59 +150,55 @@ public class Main {
         }
     }
 
-//    public static void removeLink() {
-//        try {
-//            System.out.println("Введите ваш UUID");
-//            UUID userUuid = UUID.fromString(SCANNER.nextLine());
-//            System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
-//            String shortLink = SCANNER.nextLine();
-//
-//            Optional<LinkInfo> link = DATABASE.getLink(userUuid, shortLink);
-//            if (link.isPresent()) {
-//                DATABASE.deleteLink(userUuid, shortLink);
-//                System.out.println("Ссылка удалена");
-//            } else {
-//                System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Что-то пошло не так. Попробуйте снова");
-//        }
     public static void removeLink() {
         while (true) {
             try {
-                System.out.println("Введите ваш UUID (или 'cancel' для возврата в главное меню):");
-                String uuidInput = SCANNER.nextLine();
+                // Ввод UUID с проверкой на корректность
+                UUID userUuid = null;
+                while (true) {
+                    System.out.println("Введите ваш UUID (или 'cancel' для возврата в главное меню):");
+                    String uuidInput = SCANNER.nextLine();
 
-                if (uuidInput.equalsIgnoreCase("cancel")) {
-                    System.out.println("Возвращаемся в главное меню...");
-                    break;  // Выход из цикла и возврат в главное меню
+                    if (uuidInput.equalsIgnoreCase("cancel")) {
+                        System.out.println("Возвращаемся в главное меню...");
+                        return;  // Возвращаемся в главное меню
+                    }
+
+                    // Попробуем преобразовать введенный UUID
+                    try {
+                        userUuid = UUID.fromString(uuidInput);
+                        break;  // Прерываем цикл, если UUID корректен
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Неверный формат UUID. Попробуйте снова.");
+                    }
                 }
 
-                // Попробуем преобразовать введенный UUID
-                UUID userUuid;
-                try {
-                    userUuid = UUID.fromString(uuidInput);
-                } catch (IllegalArgumentException e) {
-                    System.out.println("Неверный формат UUID. Попробуйте снова.");
-                    continue;  // Перезапускаем цикл, если UUID некорректен
+                // Ввод короткой ссылки
+                while (true) {
+                    System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку (или 'cancel' для возврата):");
+                    String shortLink = SCANNER.nextLine();
+
+                    if (shortLink.equalsIgnoreCase("cancel")) {
+                        System.out.println("Возвращаемся в главное меню...");
+                        break;  // Выход из внутреннего цикла, возвращение в главное меню
+                    }
+
+                    Optional<LinkInfo> link = DATABASE.getLink(userUuid, shortLink);
+                    if (link.isPresent()) {
+                        DATABASE.deleteLink(userUuid, shortLink);
+                        System.out.println("Ссылка удалена. Возвращаемся в главное меню...");
+                        break;  // Выход из внешнего цикла, если все прошло успешно
+                    } else {
+                        System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
+                        // Цикл продолжается, если ссылка не найдена
+                    }
                 }
 
-                System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
-                String shortLink = SCANNER.nextLine();
-
-                Optional<LinkInfo> link = DATABASE.getLink(userUuid, shortLink);
-                if (link.isPresent()) {
-                    DATABASE.deleteLink(userUuid, shortLink);
-                    System.out.println("Ссылка удалена");
-                    break;  // Выход из цикла, если все прошло успешно
-                } else {
-                    System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
-                    // Цикл продолжается, если ссылка не найдена
-                }
+                // Если мы достигли этого момента, значит, операция завершена или прервана
+                break; // Выход из основного цикла после успешного удаления или отмены операции
             } catch (Exception e) {
                 System.out.println("Что-то пошло не так. Попробуйте снова.");
             }
         }
 }
 }
-
