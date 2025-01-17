@@ -129,24 +129,74 @@ public class Main {
     }
 
     public static void updateLimit() {
-        try {
-            System.out.println("Введите ваш UUID");
-            UUID userUuid = UUID.fromString(SCANNER.nextLine());
-            System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
-            String shortLink = SCANNER.nextLine();
-            System.out.println("Какой новый лимит переходов установить? Старый счетчик и лимит будет сброшен:");
-            int newLimit = SCANNER.nextInt();
-            SCANNER.nextLine(); // Очистка буфера после nextInt
+        while (true) {
+            try {
+                // Ввод UUID с проверкой на корректность
+                UUID userUuid = null;
+                while (true) {
+                    System.out.println("Введите ваш UUID (или 'cancel' для возврата в главное меню):");
+                    String uuidInput = SCANNER.nextLine();
 
-            if (newLimit < 0) {
-                System.out.println("Лимит не может быть отрицательным");
-                return;
+                    if (uuidInput.equalsIgnoreCase("cancel")) {
+                        System.out.println("Возвращаемся в главное меню...");
+                        return;  // Возвращаемся в главное меню
+                    }
+
+                    // Попробуем преобразовать введенный UUID
+                    try {
+                        userUuid = UUID.fromString(uuidInput);
+                        break;  // Прерываем цикл, если UUID корректен
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Неверный формат UUID. Попробуйте снова.");
+                    }
+                }
+
+                // Ввод короткой ссылки
+                String shortLink = null;
+                while (true) {
+                    System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку (или 'cancel' для возврата):");
+                    shortLink = SCANNER.nextLine();
+
+                    if (shortLink.equalsIgnoreCase("cancel")) {
+                        System.out.println("Возвращаемся в главное меню...");
+                        return;  // Возвращаемся в главное меню
+                    }
+
+                    // Проверка, существует ли короткая ссылка
+                    Optional<LinkInfo> linkInfo = DATABASE.getLink(userUuid, shortLink);
+                    if (linkInfo.isPresent()) {
+                        break;  // Если ссылка найдена, выходим из цикла
+                    } else {
+                        System.out.println("Короткая ссылка не найдена. Проверьте правильность ввода или создайте новую ссылку.");
+                    }
+                }
+
+                // Ввод нового лимита
+                int newLimit = -1;
+                while (true) {
+                    System.out.println("Какой новый лимит переходов установить? Старый счетчик и лимит будет сброшен:");
+                    try {
+                        newLimit = SCANNER.nextInt();
+                        SCANNER.nextLine(); // Очистка буфера после nextInt
+                        if (newLimit < 0) {
+                            System.out.println("Лимит не может быть отрицательным. Попробуйте снова.");
+                            continue;
+                        }
+                        break;  // Прерываем цикл, если новый лимит корректен
+                    } catch (Exception e) {
+                        System.out.println("Некорректный ввод. Попробуйте снова.");
+                        SCANNER.nextLine();  // Очистка буфера после некорректного ввода
+                    }
+                }
+
+                // Обновление лимита в базе данных
+                DATABASE.updateLimit(userUuid, newLimit, shortLink);
+                System.out.println("Новый лимит: " + newLimit + ". Возвращение в главное меню...");
+                break;  // Выход из цикла после успешного обновления
+
+            } catch (Exception e) {
+                System.out.println("Что-то пошло не так. Попробуйте снова.");
             }
-
-            DATABASE.updateLimit(userUuid, newLimit, shortLink);
-            System.out.println("Новый лимит: " + newLimit);
-        } catch (Exception e) {
-            System.out.println("Вы сделали что-то неправильно.Попробуйте снова");
         }
     }
 
