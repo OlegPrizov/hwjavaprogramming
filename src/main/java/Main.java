@@ -48,13 +48,33 @@ public class Main {
 
     public static void shortenLink() {
         try {
-            System.out.println("Вставьте ссылку для сокращения");
+            System.out.println("Вставьте ссылку для сокращения или напишите \"cancel\", чтобы вернуться в главное меню:");
             String longLink = SCANNER.nextLine();
+
+            if (longLink.equalsIgnoreCase("cancel")) {
+                System.out.println("Возвращение в главное меню...");
+                return; // Выход в главное меню
+            }
 
             String shortLink = "clck.ru/" + LinkGenerator.generateRandomString(7);
 
-            System.out.println("Введите ваш UUID");
-            UUID userUuid = UUID.fromString(SCANNER.nextLine());
+            UUID userUuid = null;
+            while (true) {
+                System.out.println("Введите ваш UUID или напишите \"cancel\", чтобы вернуться в главное меню:");
+                String uuidInput = SCANNER.nextLine();
+
+                if (uuidInput.equalsIgnoreCase("cancel")) {
+                    System.out.println("Возвращение в главное меню...");
+                    return; // Выход в главное меню
+                }
+
+                try {
+                    userUuid = UUID.fromString(uuidInput);
+                    break; // Если UUID корректен, выходим из цикла
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Неверный формат UUID. Попробуйте снова.");
+                }
+            }
 
             long time = System.currentTimeMillis();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -62,71 +82,154 @@ public class Main {
             String formattedDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()).format(formatter);
             System.out.println("Дата создания: " + formattedDate);
 
-            System.out.println("Введите лимит переходов");
-            int limit = SCANNER.nextInt();
-            SCANNER.nextLine(); // Очистка буфера после nextInt
+            int limit = -1;
+            while (true) {
+                System.out.println("Введите лимит переходов (положительное число) или напишите \"cancel\", чтобы вернуться в главное меню:");
+                String limitInput = SCANNER.nextLine();
 
-            if (limit < 0) {
-                System.out.println("Лимит не может быть отрицательным");
-                return;
+                if (limitInput.equalsIgnoreCase("cancel")) {
+                    System.out.println("Возвращение в главное меню...");
+                    return; // Выход в главное меню
+                }
+
+                try {
+                    limit = Integer.parseInt(limitInput);
+                    if (limit < 0) {
+                        System.out.println("Лимит не может быть отрицательным. Попробуйте снова.");
+                    } else {
+                        break; // Если лимит корректен, выходим из цикла
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Некорректный ввод. Введите положительное число.");
+                }
             }
 
             DATABASE.saveLink(longLink, shortLink, userUuid, time, limit);
-
             System.out.println("Запрос обработан. Ваша короткая ссылка: " + shortLink);
+
         } catch (Exception e) {
-            System.out.println("Что-то пошло не так. Попробуйте снова");
+            System.out.println("Что-то пошло не так. Попробуйте снова.");
         }
     }
 
+//    public static void visitLink() {
+//        try {
+//            System.out.println("Введите ваш UUID:");
+//            UUID userUuid = UUID.fromString(SCANNER.nextLine());
+//            System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
+//            String shortLink = SCANNER.nextLine();
+//
+//            Optional<LinkInfo> optionalLink = DATABASE.getLink(userUuid, shortLink);
+//            if (!optionalLink.isPresent()) {
+//                System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
+//                return;
+//            }
+//
+//            LinkInfo link = optionalLink.get();
+//            long timeCreate = link.getLinkCreatedDate();
+//            long lifeTime = System.currentTimeMillis() - timeCreate;
+//            long linkLiveTime = (long) LIVE_TIME_LINK_HOUR * 60 * 60 * 1000;
+//
+//            if (linkLiveTime < lifeTime) {
+//                System.out.println("Ссылка недействительна, истек срок действия");
+//                DATABASE.deleteLink(userUuid, shortLink);
+//                return;
+//            }
+//
+//            int limit = link.getLimit();
+//            if (limit > 1) {
+//                int newLimit = limit - 1;
+//                System.out.println("Осталось " + newLimit + " переходов");
+//                DATABASE.updateLimit(userUuid, newLimit, shortLink);
+//            } else if (limit == 1) {
+//                int newLimit = -1;
+//                System.out.println("Осталось 0 переходов, далее ссылка будет недоступна");
+//                DATABASE.updateLimit(userUuid, newLimit, shortLink);
+//            } else if (limit == -1) {
+//                System.out.println("Ссылка недоступна");
+//                return;
+//            }
+//
+//            String longLink = link.getLongLink();
+//            try {
+//                Desktop.getDesktop().browse(new URI(longLink));
+//            } catch (IOException | URISyntaxException e) {
+//                System.out.println("Не удалось перейти по ссылке");
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Что-то пошло не так. Попробуйте снова");
+//        }
+//    }
     public static void visitLink() {
         try {
-            System.out.println("Введите ваш UUID:");
-            UUID userUuid = UUID.fromString(SCANNER.nextLine());
-            System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку:");
-            String shortLink = SCANNER.nextLine();
+            UUID userUuid = null;
+            while (true) {
+                System.out.println("Введите ваш UUID или напишите \"cancel\", чтобы вернуться в главное меню:");
+                String uuidInput = SCANNER.nextLine();
 
-            Optional<LinkInfo> optionalLink = DATABASE.getLink(userUuid, shortLink);
-            if (!optionalLink.isPresent()) {
-                System.out.println("Данная короткая ссылка не была найдена, проверьте введенные вами данные");
-                return;
+                if (uuidInput.equalsIgnoreCase("cancel")) {
+                    System.out.println("Возвращение в главное меню...");
+                    return; // Выход в главное меню
+                }
+
+                try {
+                    userUuid = UUID.fromString(uuidInput);
+                    break; // Если UUID корректен, выходим из цикла
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Неверный формат UUID. Попробуйте снова.");
+                }
             }
 
-            LinkInfo link = optionalLink.get();
-            long timeCreate = link.getLinkCreatedDate();
-            long lifeTime = System.currentTimeMillis() - timeCreate;
-            long linkLiveTime = (long) LIVE_TIME_LINK_HOUR * 60 * 60 * 1000;
+            String shortLink;
+            while (true) {
+                System.out.println("Какая короткая ссылка вас интересует? Вставьте ссылку или напишите \"cancel\", чтобы вернуться в главное меню:");
+                shortLink = SCANNER.nextLine();
 
-            if (linkLiveTime < lifeTime) {
-                System.out.println("Ссылка недействительна, истек срок действия");
-                DATABASE.deleteLink(userUuid, shortLink);
-                return;
-            }
+                if (shortLink.equalsIgnoreCase("cancel")) {
+                    System.out.println("Возвращение в главное меню...");
+                    return; // Выход в главное меню
+                }
 
-            int limit = link.getLimit();
-            if (limit > 1) {
-                int newLimit = limit - 1;
-                System.out.println("Осталось " + newLimit + " переходов");
-                DATABASE.updateLimit(userUuid, newLimit, shortLink);
-            } else if (limit == 1) {
-                int newLimit = -1;
-                System.out.println("Осталось 0 переходов, далее ссылка будет недоступна");
-                DATABASE.updateLimit(userUuid, newLimit, shortLink);
-            } else if (limit == -1) {
-                System.out.println("Ссылка недоступна");
-                return;
-            }
+                Optional<LinkInfo> optionalLink = DATABASE.getLink(userUuid, shortLink);
+                if (optionalLink.isPresent()) {
+                    LinkInfo link = optionalLink.get();
 
-            String longLink = link.getLongLink();
-            try {
-                Desktop.getDesktop().browse(new URI(longLink));
-            } catch (IOException | URISyntaxException e) {
-                System.out.println("Не удалось перейти по ссылке");
+                    long timeCreate = link.getLinkCreatedDate();
+                    long lifeTime = System.currentTimeMillis() - timeCreate;
+                    long linkLiveTime = (long) LIVE_TIME_LINK_HOUR * 60 * 60 * 1000;
+
+                    if (linkLiveTime < lifeTime) {
+                        System.out.println("Ссылка недействительна, истек срок действия");
+                        DATABASE.deleteLink(userUuid, shortLink);
+                        return;
+                    }
+
+                    int limit = link.getLimit();
+                    if (limit > 0) {
+                        int newLimit = limit - 1;
+                        System.out.println("Осталось " + newLimit + " переходов");
+                        DATABASE.updateLimit(userUuid, newLimit, shortLink);
+                    } else if (limit == 0) {
+                        System.out.println("Осталось 0 переходов, далее ссылка будет недоступна. Возвращение в главное меню...");
+                        return;
+                    }
+
+                    String longLink = link.getLongLink();
+                    try {
+                        Desktop.getDesktop().browse(new URI(longLink));
+                    } catch (IOException | URISyntaxException e) {
+                        System.out.println("Не удалось перейти по ссылке");
+                    }
+                    return; // Успешное завершение
+                } else {
+                    System.out.println("Данная короткая ссылка не была найдена. Проверьте введенные вами данные.");
+                }
             }
         } catch (Exception e) {
-            System.out.println("Что-то пошло не так. Попробуйте снова");
+            System.out.println("Что-то пошло не так. Попробуйте снова.");
         }
     }
+
 
     public static void updateLimit() {
         while (true) {
