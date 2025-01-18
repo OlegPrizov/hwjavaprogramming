@@ -1,3 +1,4 @@
+// класс с информацией о ссылке
 class LinkInfo {
     private String longLink;
     private long linkCreatedDate;

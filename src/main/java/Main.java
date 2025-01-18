@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
+// Основной класс с нужными методами
 public class Main {
     private static final Database DATABASE = new Database();
     private static final Scanner SCANNER = new Scanner(System.in);
@@ -24,7 +25,7 @@ public class Main {
                 "5. 'remove link' - удалить короткую ссылку. Введите UUID и короткую ссылку, чтобы полностью удалить её из системы, если такая существует.\n" +
                 "Для выхода из программы используйте Ctrl+C.");
 
-
+        // проверяем ввод команды пользователем
         while (true) {
             String input = SCANNER.nextLine();
             if (input.equals("register user")) {
@@ -46,6 +47,7 @@ public class Main {
         }
     }
 
+    // функция для сокращения ссылки
     public static void shortenLink() {
         try {
             System.out.println("Вставьте ссылку для сокращения или напишите \"cancel\", чтобы вернуться в главное меню:");
@@ -104,6 +106,7 @@ public class Main {
                 }
             }
 
+            // сохраняется ссылка
             DATABASE.saveLink(longLink, shortLink, userUuid, time, limit);
             System.out.println("Запрос обработан. Ваша короткая ссылка: " + shortLink);
 
@@ -112,6 +115,7 @@ public class Main {
         }
     }
 
+    // функция перехода по ссылкам
     public static void visitLink() {
         try {
             UUID userUuid = null;
@@ -146,6 +150,7 @@ public class Main {
                 if (optionalLink.isPresent()) {
                     LinkInfo link = optionalLink.get();
 
+                    // далее проверяется, действительна ли ссылка
                     long timeCreate = link.getLinkCreatedDate();
                     long lifeTime = System.currentTimeMillis() - timeCreate;
                     long linkLiveTime = (long) LIVE_TIME_LINK_HOUR * 60 * 60 * 1000;
@@ -156,6 +161,7 @@ public class Main {
                         return;
                     }
 
+                    // сокращаю количество переходов
                     int limit = link.getLimit();
                     if (limit > 0) {
                         int newLimit = limit - 1;
@@ -166,6 +172,7 @@ public class Main {
                         return;
                     }
 
+                    // непосредственно сам переход по ссылке
                     String longLink = link.getLongLink();
                     try {
                         Desktop.getDesktop().browse(new URI(longLink));
@@ -182,7 +189,7 @@ public class Main {
         }
     }
 
-
+    // метод увеличения лимита переходов
     public static void updateLimit() {
         while (true) {
             try {
@@ -197,7 +204,7 @@ public class Main {
                         return;  // Возвращаемся в главное меню
                     }
 
-                    // Попробуем преобразовать введенный UUID
+                    // Проверка UUID
                     try {
                         userUuid = UUID.fromString(uuidInput);
                         break;  // Прерываем цикл, если UUID корректен
@@ -255,6 +262,7 @@ public class Main {
         }
     }
 
+    // Удаление ссылки
     public static void removeLink() {
         while (true) {
             try {
@@ -290,7 +298,7 @@ public class Main {
 
                     Optional<LinkInfo> link = DATABASE.getLink(userUuid, shortLink);
                     if (link.isPresent()) {
-                        DATABASE.deleteLink(userUuid, shortLink);
+                        DATABASE.deleteLink(userUuid, shortLink); // непосредственно само удаление
                         System.out.println("Ссылка удалена. Возвращаемся в главное меню...");
                         break;  // Выход из внешнего цикла, если все прошло успешно
                     } else {

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
+// этот класс ответчает за создание коротких ссылок
 public class LinkGenerator {
 
     // Метод для загрузки символов из файла в папке resources
@@ -38,7 +39,7 @@ public class LinkGenerator {
     }
 
     public static void main(String[] args) {
-        // Пример использования метода с длиной строки 7
+        // Просто пример использования, этот метод необязательный
         System.out.println(generateRandomString(7));
     }
 }
